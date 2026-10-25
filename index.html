@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;font-family:sans-serif}
+body{background:#f6f7fb;color:#14182b;padding:16px;line-height:1.6}
+h1{font-size:22px;margin-bottom:4px}
+p{color:#6b7390;font-size:14px;margin-bottom:12px}
+textarea{width:100%;height:46vh;direction:ltr;text-align:left;font-family:monospace;font-size:12px;border:1px solid #dfe3f0;border-radius:12px;padding:10px}
+input,select,button{width:100%;font-size:16px;font-weight:700;border-radius:12px;padding:12px;border:1px solid #dfe3f0;background:#fff;margin-top:8px}
+button.p{background:#6d28d9;color:#fff;border-color:#6d28d9}
+button.v{background:#0891b2;color:#fff;border-color:#0891b2}
+#ov{display:none;position:fixed;inset:0;background:#fff;z-index:9;flex-direction:column}
+#ov.on{display:flex}
+#ov button{margin:0;border-radius:0;border-width:0 0 1px 0}
+#fr{flex:1;width:100%;border:0}
+</style></head><body>
+<h1>محوّل HTML إلى PDF</h1>
+<p>الصق الكود أو افتح ملف، واختار المقاس، وبعدها «تصدير PDF».</p>
+<textarea id="code" placeholder="الصق كود HTML هنا…" spellcheck="false"></textarea>
+<button onclick="Android.pickFile()">فتح ملف .html</button>
+<select id="size">
+<option value="slide">شرائح 16:9</option>
+<option value="a4l">A4 عرضي</option>
+<option value="a4p">A4 طولي</option>
+</select>
+<input id="name" placeholder="اسم الملف (اختياري)">
+<button class="v" onclick="prev()">معاينة</button>
+<button class="p" onclick="go()">تصدير PDF</button>
+<div id="ov"><button onclick="closePrev()">إغلاق المعاينة ✕</button><iframe id="fr"></iframe></div>
+<script>
+function setCode(t){document.getElementById('code').value=t}
+function css(s){
+  var b='*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}';
+  var m='@media print{html,body{margin:0!important}.slide{width:100%!important;max-width:none!important;margin:0!important;border-radius:0!important;box-shadow:none!important;break-after:page;page-break-after:always;break-inside:avoid}}';
+  if(s==='slide') m=m.replace('width:100%!important;max-width:none!important;','width:1280px!important;max-width:none!important;min-height:720px!important;');
+  return b+m;
+}
+function build(){
+  var h=document.getElementById('code').value.trim();
+  if(!h){alert('الصق الكود الأول');return null}
+  var x='<style>'+css(document.getElementById('size').value)+'</style>';
+  return /<\/head>/i.test(h)?h.replace(/<\/head>/i,x+'</head>'):x+h;
+}
+function prev(){
+  var h=build(); if(!h) return;
+  document.getElementById('fr').srcdoc=h;
+  document.getElementById('ov').className='on';
+}
+function closePrev(){document.getElementById('ov').className='';document.getElementById('fr').srcdoc=''}
+function go(){
+  var h=document.getElementById('code').value.trim();
+  if(!h){alert('الصق الكود الأول');return}
+  var s=document.getElementById('size').value;
+  var x='<style>'+css(s)+'</style>';
+  h=/<\/head>/i.test(h)?h.replace(/<\/head>/i,x+'</head>'):x+h;
+  var n=document.getElementById('name').value.trim()||'document';
+  Android.exportPdf(h,s,n);
+}
+</script></body></html>
